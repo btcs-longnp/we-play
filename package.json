@@ -39,7 +39,7 @@
     "react-native-vector-icons": "^9.0.0",
     "react-native-web": "0.17.1",
     "react-native-webrtc": "^1.94.1",
-    "tailwind-rn": "^3.0.1"
+    "twrnc": "^2.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
