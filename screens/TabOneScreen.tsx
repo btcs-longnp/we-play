@@ -6,11 +6,14 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
+  Appearance,
 } from 'react-native';
 import tw, { useDeviceContext } from 'twrnc';
 import { FC, useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
+import { useHeaderHeight } from '@react-navigation/elements';
+import { BlurView } from 'expo-blur';
 
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
@@ -23,6 +26,7 @@ import PlaylistRepository from '../services/firestore/PlaylistRepository';
 import { newSongRequest } from '../models/songRequest/SongRequest';
 import YoutubeSong, { newYoutubeSong } from '../models/song/YoutubeSong';
 import { newUser } from '../models/user/User';
+import qiqiWakaranaiImage from '../assets/images/qiqi-wakaranai.png';
 
 const repo = new PlaylistRepository('isling');
 
@@ -73,7 +77,18 @@ export default function TabOneScreen({
   const [playlist, setPlaylist] = useState<Playlist>(newPlaylist([], 0));
   const timeout = useRef<any>(null);
   const keywordInputRef = useRef<TextInput>(null);
+  const headerHeightRef = useRef<number>(-1);
+  const headerHeight = useHeaderHeight();
   useDeviceContext(tw);
+
+  const colorScheme = Appearance.getColorScheme() || 'light';
+
+  useEffect(() => {
+    if (headerHeightRef.current === -1) {
+      headerHeightRef.current = headerHeight;
+    }
+    console.log('headerHeight: ', headerHeight);
+  }, [headerHeight]);
 
   const handleChange = (value: string) => {
     console.log('handleChange', value);
@@ -139,50 +154,12 @@ export default function TabOneScreen({
   return (
     <View style={tw`h-full`}>
       <View style={tw`flex flex-1`}>
-        <View style={tw`h-24 flex justify-end items-end pb-2 px-4`}>
-          <View style={tw`flex flex-row w-full justify-between items-center`}>
-            <View style={tw`flex flex-row items-center`}>
-              <Ionicons
-                name='musical-note'
-                style={tw`mr-4 text-red-400 dark:text-red-800`}
-                size={24}
-              />
-              {playlist.list
-                .slice(
-                  Math.max(playlist.list.length - 6, 0),
-                  playlist.list.length
-                )
-                .map((item) => (
-                  <View
-                    style={tw`flex items-center justify-center shadow rounded-full overflow-hidden h-6 w-6 -ml-4 border border-gray-300`}
-                    key={item.id}
-                  >
-                    <Image
-                      source={{ uri: item.song.thumbnail }}
-                      style={tw`w-8 h-8`}
-                      resizeMode='cover'
-                    />
-                  </View>
-                ))}
-              <Text style={tw`ml-2  text-gray-600 dark:text-gray-200`}>
-                {playlist.list.length}
-              </Text>
-            </View>
-            <View style={tw`flex flex-row`}>
-              <Text
-                style={tw`text-base font-semibold text-gray-600 dark:text-gray-200`}
-              >
-                isling
-              </Text>
-              <View
-                style={tw`w-6 h-6 rounded-full bg-red-400 dark:bg-red-800 ml-2`}
-              />
-            </View>
-          </View>
-        </View>
-        <ScrollView style={tw``}>
-          {items.length > 0 &&
-            items.map((value) => {
+        {items.length > 0 ? (
+          <ScrollView>
+            <View
+              style={tw`h-[${headerHeightRef.current}px] w-full bg-transparent`}
+            />
+            {items.map((value) => {
               const videoData = value.snippet;
               return (
                 <MusicCard
@@ -200,31 +177,35 @@ export default function TabOneScreen({
                 />
               );
             })}
-        </ScrollView>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={tw`flex absolute bottom-0`}
-        >
+          </ScrollView>
+        ) : (
+          <View style={tw`flex flex-1 h-full justify-center items-center`}>
+            <Image source={qiqiWakaranaiImage} style={tw`w-36 h-36 -mt-12`} />
+          </View>
+        )}
+      </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={tw`flex absolute bottom-0 w-full`}
+      >
+        <BlurView intensity={80} tint={colorScheme} style={tw`flex px-4 py-3`}>
           <View
-            style={tw`flex px-4 py-3 bg-opacity-95 bg-white dark:bg-black dark:bg-opacity-80`}
+            style={tw`flex flex-row items-center h-12 rounded-xl bg-red-400 dark:bg-red-800 shadow `}
+            onTouchStart={focusKeywordInput}
           >
-            <View
-              style={tw`flex flex-row items-center h-12 rounded-xl bg-red-400 dark:bg-red-800 shadow `}
-              onTouchStart={focusKeywordInput}
-            >
-              <Ionicons
-                name='search-outline'
-                size={20}
-                style={tw`ml-3 absolute z-20 text-gray-300`}
-              />
-              <TextInput
-                ref={keywordInputRef}
-                style={tw`h-full w-full pl-9 pr-3 text-[#f1f5f9]`}
-                placeholder='Search'
-                onChangeText={handleChange}
-                placeholderTextColor='#f1f5f9'
-              />
-              {/* {keyword !== '' && (
+            <Ionicons
+              name='search-outline'
+              size={20}
+              style={tw`ml-3 absolute z-20 text-gray-300`}
+            />
+            <TextInput
+              ref={keywordInputRef}
+              style={tw`h-full w-full pl-9 pr-3 text-[#f1f5f9]`}
+              placeholder='Search'
+              onChangeText={handleChange}
+              placeholderTextColor='#f1f5f9'
+            />
+            {/* {keyword !== '' && (
               <Pressable onPress={clearKeyword}>
                 <View
                   style={tw`absolute flex items-center justify-center right-3 w-4 h-4 bg-gray-100 bg-opacity-80 rounded-full`}
@@ -233,10 +214,62 @@ export default function TabOneScreen({
                 </View>
               </Pressable>
             )} */}
-            </View>
           </View>
-        </KeyboardAvoidingView>
-      </View>
+        </BlurView>
+      </KeyboardAvoidingView>
+      <BlurView
+        tint={colorScheme}
+        intensity={80}
+        style={tw`absolute w-full top-0 h-[${headerHeightRef.current}px] flex justify-end items-end pb-2 px-4`}
+      >
+        <View
+          style={tw`flex flex-row w-full justify-between items-center bg-transparent`}
+        >
+          <View style={tw`flex flex-row items-center bg-transparent`}>
+            <Ionicons
+              name='musical-note'
+              style={tw`mr-4 text-red-400 dark:text-red-800`}
+              size={24}
+            />
+            {playlist.list
+              .slice(
+                Math.max(playlist.list.length - 6, 0),
+                playlist.list.length
+              )
+              .map((item) => (
+                <View
+                  style={tw`flex items-center justify-center shadow rounded-full overflow-hidden h-6 w-6 -ml-4 border border-gray-300`}
+                  key={item.id}
+                >
+                  <Image
+                    source={{ uri: item.song.thumbnail }}
+                    style={tw`w-8 h-8`}
+                    resizeMode='cover'
+                  />
+                </View>
+              ))}
+            {playlist.list.length > 0 ? (
+              <Text style={tw`ml-2 text-gray-600 dark:text-gray-200`}>
+                {playlist.list.length}
+              </Text>
+            ) : (
+              <Text style={tw`-ml-3 text-gray-600 dark:text-gray-200`}>
+                add song plz
+              </Text>
+            )}
+          </View>
+          <View style={tw`flex flex-row bg-transparent`}>
+            <Text
+              style={tw`text-base font-semibold text-gray-600 dark:text-gray-200`}
+            >
+              isling
+            </Text>
+            <View
+              style={tw`w-6 h-6 rounded-full bg-red-400 dark:bg-red-800 ml-1`}
+            />
+          </View>
+        </View>
+      </BlurView>
     </View>
   );
 }
