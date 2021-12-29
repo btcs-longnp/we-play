@@ -86,6 +86,7 @@ export default function TabOneScreen({
       timeout.current = undefined;
     }, 800);
   };
+  const clearKeyword = () => setKeyword('');
 
   const addSongRequest = (youtubeSong: YoutubeSong) => async () => {
     const songRequest = newSongRequest(
@@ -138,16 +139,45 @@ export default function TabOneScreen({
   return (
     <View style={tw`h-full`}>
       <View style={tw`flex flex-1`}>
-        <View
-          style={tw`h-24 flex justify-end items-end pb-2 px-4 shadow-md border-b border-gray-300 dark:border-gray-900 border-opacity-90`}
-        >
-          <View style={tw`flex flex-row`}>
-            <Text
-              style={tw`text-base font-semibold text-gray-600 dark:text-gray-200`}
-            >
-              isling
-            </Text>
-            <View style={tw`w-6 h-6 rounded-full bg-gray-300 ml-2`} />
+        <View style={tw`h-24 flex justify-end items-end pb-2 px-4`}>
+          <View style={tw`flex flex-row w-full justify-between items-center`}>
+            <View style={tw`flex flex-row items-center`}>
+              <Ionicons
+                name='musical-note'
+                style={tw`mr-4 text-red-400 dark:text-red-800`}
+                size={24}
+              />
+              {playlist.list
+                .slice(
+                  Math.max(playlist.list.length - 6, 0),
+                  playlist.list.length
+                )
+                .map((item) => (
+                  <View
+                    style={tw`flex items-center justify-center shadow rounded-full overflow-hidden h-6 w-6 -ml-4 border border-gray-300`}
+                    key={item.id}
+                  >
+                    <Image
+                      source={{ uri: item.song.thumbnail }}
+                      style={tw`w-8 h-8`}
+                      resizeMode='cover'
+                    />
+                  </View>
+                ))}
+              <Text style={tw`ml-2  text-gray-600 dark:text-gray-200`}>
+                {playlist.list.length}
+              </Text>
+            </View>
+            <View style={tw`flex flex-row`}>
+              <Text
+                style={tw`text-base font-semibold text-gray-600 dark:text-gray-200`}
+              >
+                isling
+              </Text>
+              <View
+                style={tw`w-6 h-6 rounded-full bg-red-400 dark:bg-red-800 ml-2`}
+              />
+            </View>
           </View>
         </View>
         <ScrollView style={tw``}>
@@ -173,25 +203,37 @@ export default function TabOneScreen({
         </ScrollView>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={tw`flex`}
+          style={tw`flex absolute bottom-0`}
         >
           <View
-            style={tw`flex flex-row items-center h-12 mx-4 my-3 rounded-xl bg-gray-50`}
-            onTouchStart={focusKeywordInput}
+            style={tw`flex px-4 py-3 bg-opacity-95 bg-white dark:bg-black dark:bg-opacity-80`}
           >
-            <Ionicons
-              name='search-outline'
-              size={20}
-              color='#94a3b8'
-              style={tw`ml-3 absolute z-20`}
-            />
-            <TextInput
-              ref={keywordInputRef}
-              style={tw`h-full w-full pl-9 pr-3`}
-              placeholder='Search'
-              onChangeText={handleChange}
-              placeholderTextColor='#94a3b8'
-            />
+            <View
+              style={tw`flex flex-row items-center h-12 rounded-xl bg-red-400 dark:bg-red-800 shadow `}
+              onTouchStart={focusKeywordInput}
+            >
+              <Ionicons
+                name='search-outline'
+                size={20}
+                style={tw`ml-3 absolute z-20 text-gray-300`}
+              />
+              <TextInput
+                ref={keywordInputRef}
+                style={tw`h-full w-full pl-9 pr-3 text-[#f1f5f9]`}
+                placeholder='Search'
+                onChangeText={handleChange}
+                placeholderTextColor='#f1f5f9'
+              />
+              {/* {keyword !== '' && (
+              <Pressable onPress={clearKeyword}>
+                <View
+                  style={tw`absolute flex items-center justify-center right-3 w-4 h-4 bg-gray-100 bg-opacity-80 rounded-full`}
+                >
+                  <Ionicons name='close' size={12} style={tw`text-gray-600`} />
+                </View>
+              </Pressable>
+            )} */}
+            </View>
           </View>
         </KeyboardAvoidingView>
       </View>
